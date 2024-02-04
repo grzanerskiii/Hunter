@@ -39,7 +39,7 @@ class Monster:
             if self.rect.top < win.top or self.rect.bottom > win.bottom:
                 vector[1] = -vector[1]
 
-def createMonsterList():
+#def createMonsterList():
     
     # Initialize Pygame
 pygame.init()

@@ -3,6 +3,8 @@ import sys
 import random
 import time
 
+import buttonSetup
+
 # def check_quit(event):
 #     for event in pygame.event.get():
 #         if event.type == pygame.QUIT:
@@ -27,6 +29,29 @@ class Monster:
         self.position = [random.randint(0+self.rect.width,1000-self.rect.width), random.randint(0+self.rect.height,500-self.rect.height)]
         self.rect.center = self.position  
     
+# class Button:
+#     def __init__(self, x, y, image, scale):
+#         width = image.get_width()
+#         height = image.get_height()
+#         self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
+#         self.rect = self.image.get_rect()
+#         self.rect.center = (x,y)
+#         self.clicked = False
+
+def button(button):
+    action = False
+    mousePos = pygame.mouse.get_pos()
+    game_window.blit(button.image, (button.rect.x, button.rect.y))
+    if pygame.mouse.get_pressed()[0] == 1 and button.clicked == False:
+        if button.rect.collidepoint(mousePos):
+            action = True
+            button.clicked = True
+    if pygame.mouse.get_pressed()[0] == 0:
+            button.clicked = False        
+    
+    return action
+    
+
 def monsterMove(i):
     global monsterList
     if monsterList[i].rect.left < win.left:
@@ -49,13 +74,13 @@ def updateMonsterList(round):
     for i in range(0, len(monsterRounds[round])):
         monsterList.append(Monster(monsterRounds[round][i]))
         
-def checkNextRound(curTime, firstRound):
+def checkNextRound(curTime, round):
     allDead = True
     for i in monsterList:
         if i.alive == True:
             allDead = False
         
-    if (pygame.time.get_ticks() - curTime)/1000 > 2 or firstRound == True:
+    if (pygame.time.get_ticks() - curTime)/1000 > 1 or round == 1:
         return True
     
     return allDead
@@ -98,9 +123,9 @@ pygame.mouse.set_visible(False)
 
 # Setting monster queue
 monsterRounds = {
-    1:"111",
-    2:"222",
-    3:"333",
+    1:"11",
+    2:"22",
+    3:"33",
     4:''
 }
 
@@ -109,8 +134,8 @@ points = 0
 
 def main():
     # starting game state
-    state = "game"
-
+    global monsterList
+    state = "main menu"
     round = 1
     currentRoundTime = 10000
     firstRound = True 
@@ -122,7 +147,8 @@ def main():
         match(state):
             case 'game':
                 print(points)
-                if checkNextRound(currentRoundTime, firstRound):
+                
+                if checkNextRound(currentRoundTime, round):
                     updateMonsterList(round)
                     firstRound = False
                     currentRoundTime = pygame.time.get_ticks()
@@ -136,6 +162,7 @@ def main():
                     if event.type == pygame.QUIT:
                         running = False
                     shoot(event)
+                    
                     
                 game_window.blit(background, (0, 0))
                 # Draw the monsters
@@ -153,8 +180,15 @@ def main():
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
-            
 
+                if button(buttonSetup.playButton):
+                    state = 'game'    
+                    round = 1
+                    monsterList = []
+                
+                showCrosshair()
+                
+            
         
         # Update the display
         fpsClock.tick(fps)

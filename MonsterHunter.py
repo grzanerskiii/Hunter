@@ -10,16 +10,15 @@ def check_quit(event):
 class Monster:
     def __init__(self, type):
         self.type = type
-        if type == "pink":
+        if type == "1":
             self.speed = 1
             self.size = 50
             self.sprite = pygame.image.load('./pictures/monster_pink.png')
-        
-        elif type == "yellow":
+        elif type == "2":
             self.speed = 2
             self.size = 100
             self.sprite = pygame.image.load('./pictures/monster_yellow.png')
-        elif type == "red":
+        elif type == "3":
             self.speed = 3
             self.size = 150
             self.sprite = pygame.image.load('./pictures/monster_red.png')
@@ -27,7 +26,7 @@ class Monster:
         self.position = [50, 50]
         self.rect.center = self.position  
     
-    def MonsterMove(self,):
+    def monsterMove(self,):
             #self.win = win
             vector = [2, 0]
             self.rect = self.sprite.get_rect()
@@ -38,10 +37,24 @@ class Monster:
                 vector[0] = -vector[0]
             if self.rect.top < win.top or self.rect.bottom > win.bottom:
                 vector[1] = -vector[1]
+    
+def monsterDraw():
+    for i in range (0, len(monsterList)):
+        monsterList[i].position[0]+=i*50
+        game_window.blit(monsterList[i].sprite, monsterList[i].position)
+
+
+
 
 def createMonsterList():
+    global monsterList
+    for i in range(0, len(monsterRounds[round])):
+        monsterList.append(Monster(monsterRounds[round][i]))
+
+                
+
     
-    # Initialize Pygame
+# Initialize Pygame
 pygame.init()
 pygame.mixer.init()
 
@@ -64,11 +77,14 @@ pygame.display.set_icon(pygame.image.load('./pictures/monster_red.png'))
 # starting game state
 state = "menu"
 
+round = 1
+monsterRounds = {
+    1:"111222123",
+    2:"222"
+}
 
 
-
-
-
+createMonsterList()
 
 def main():
     # Game loop
@@ -77,10 +93,9 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
         game_window.blit(background, (0, 0))
         # Draw the monsters
-        
+        monsterDraw()
         
     
 

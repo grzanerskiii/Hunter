@@ -1,6 +1,5 @@
 import pygame
 import sys
-
 def check_quit():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

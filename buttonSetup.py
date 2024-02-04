@@ -13,3 +13,5 @@ class Button:
 
 #buttons
 playButton = Button(500, 220, pygame.image.load('./pictures/play.png'), 0.7 )
+settingsButton = Button(500, 320, pygame.image.load('./pictures/settings.png'), 0.7 )
+exitButton = Button(500, 420, pygame.image.load('./pictures/exit.png'), 0.7 )

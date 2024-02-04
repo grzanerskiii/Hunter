@@ -180,13 +180,23 @@ def main():
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
-
                 if button(buttonSetup.playButton):
                     state = 'game'    
                     round = 1
                     monsterList = []
-                
+                if button(buttonSetup.settingsButton):
+                    state = 'settings'
+                if button(buttonSetup.exitButton):
+                    running = False
                 showCrosshair()
+                    
+            case 'settings':
+                game_window.blit(background, (0, 0))
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+
+                
                 
             
         

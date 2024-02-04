@@ -100,6 +100,15 @@ def showCrosshair():
     crosshair = pygame.image.load('./pictures/target.png')
     game_window.blit(crosshair,(mousePos[0] - crosshair.get_width()/2 ,mousePos[1] - crosshair.get_height()/2))
 
+def showGun():
+    gunRect = pygame.image.load('./pictures/gunfire.png').get_rect()
+    gunRect.centerx = window_width/2
+    gunRect.bottom = 500
+    if pygame.mouse.get_pressed()[0] == 1:
+        game_window.blit(pygame.image.load('./pictures/gunfire.png'), gunRect)
+    else:
+        game_window.blit(pygame.image.load('./pictures/gun.png'), gunRect)
+
 # Initialize Pygame
 pygame.init()
 pygame.mixer.init()
@@ -173,7 +182,9 @@ def main():
                         game_window.blit(monsterList[i].sprite, monsterList[i].rect)
                 
                 # Draw the crosshair
+                
                 showCrosshair()
+                showGun()
 
             case 'main menu':
                 game_window.blit(background, (0, 0))

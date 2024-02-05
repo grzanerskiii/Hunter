@@ -15,17 +15,20 @@ class Monster:
     def __init__(self, type):
         self.type = type
         if type == "1":
-            self.speed = 1
-            self.sprite = pygame.transform.scale_by(pygame.image.load('./pictures/monster_pink.png'), 1/3)
+            self.speed = 4
+            self.sprite = pygame.transform.scale_by(pygame.image.load('./pictures/monster_pink.png'), 1/5)
         elif type == "2":
-            self.speed = 2
-            self.sprite = pygame.transform.scale_by(pygame.image.load('./pictures/monster_yellow.png'), 1/4) 
+            self.speed = 5
+            self.sprite = pygame.transform.scale_by(pygame.image.load('./pictures/monster_yellow.png'), 1/6) 
         elif type == "3":
-            self.speed = 3
-            self.sprite = pygame.transform.scale_by(pygame.image.load('./pictures/monster_red.png'), 1/5)
+            self.speed = 6
+            self.sprite = pygame.transform.scale_by(pygame.image.load('./pictures/monster_red.png'), 1/8)
         self.alive = True
         self.rect = self.sprite.get_rect()
-        self.vector = [self.speed, self.speed]
+        multiplier = 0
+        while multiplier == 0:
+            multiplier = random.randint(-1, 1)
+        self.vector = [multiplier*self.speed, multiplier*self.speed]
         self.position = [random.randint(0+self.rect.width,1000-self.rect.width), random.randint(0+self.rect.height,500-self.rect.height)]
         self.rect.center = self.position  
     
@@ -80,19 +83,21 @@ def checkNextRound(curTime, round):
         if i.alive == True:
             allDead = False
         
-    if (pygame.time.get_ticks() - curTime)/1000 > 1 or round == 1:
+    if (pygame.time.get_ticks() - curTime)/1000 > 5 or round == 1:
         return True
     
     return allDead
 
-def shoot(event):
+def shoot(event, mute):
     global monsterList
     global points
     mousePos = pygame.mouse.get_pos()
     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
         for i in monsterList:
-            if i.rect.collidepoint(mousePos):
+            if i.rect.collidepoint(mousePos) and i.alive == True:
                 i.alive = False
+                if mute == False:
+                    pygame.mixer.Sound.play(hit)
                 points += 50
 
 def showCrosshair():
@@ -105,9 +110,42 @@ def showGun():
     gunRect.centerx = window_width/2
     gunRect.bottom = 500
     if pygame.mouse.get_pressed()[0] == 1:
-        game_window.blit(pygame.image.load('./pictures/gunfire.png'), gunRect)
+        if pygame.mouse.get_pos()[0]<=500:
+            game_window.blit(pygame.image.load('./pictures/gunfire.png'), gunRect)
+        else: 
+            game_window.blit(pygame.transform.flip(pygame.image.load('./pictures/gunfire.png'), True, False), gunRect)
     else:
-        game_window.blit(pygame.image.load('./pictures/gun.png'), gunRect)
+        if pygame.mouse.get_pos()[0]<=500:
+            game_window.blit(pygame.image.load('./pictures/gun.png'), gunRect)
+        else: 
+            game_window.blit(pygame.transform.flip(pygame.image.load('./pictures/gun.png'), True, False), gunRect)
+
+def showBar(round):
+    game_window.blit(pygame.image.load('./pictures/bar.png'), (0,500))
+
+    scoreImg = font.render(str(points), True, text_col)
+    scoreRect = scoreImg.get_rect()
+    scoreRect.center = (620, 550)
+    game_window.blit(scoreImg, scoreRect)
+
+    roundImg = font.render('{}/{}'.format(str(round-1), str(len(monsterRounds)-1)), True, text_col)
+    roundRect = roundImg.get_rect()
+    roundRect.center = (930, 550)
+    game_window.blit(roundImg, roundRect)
+
+def showScores(highestScore):
+    game_window.blit(pygame.image.load('./pictures/scoreOverlay.png'), (0, 0))
+
+    highScoreImg = font.render(str(highestScore), True, text_col)
+    highScoreRect = highScoreImg.get_rect()
+    highScoreRect.center = (620, 75)
+    game_window.blit(highScoreImg, highScoreRect)
+
+    scoreImg = font.render(str(points), True, text_col)
+    scoreRect = scoreImg.get_rect()
+    scoreRect.center = (580, 125)
+    game_window.blit(scoreImg, scoreRect)
+
 
 # Initialize Pygame
 pygame.init()
@@ -125,17 +163,27 @@ win = game_window.get_rect()
 monsterList = []
 # Load images
 background = pygame.image.load('./pictures/background_hell.jpg')
+backgroundMainMenu = pygame.image.load('./pictures/mainmenu.png')
 pygame.display.set_caption('MonsterHunter')
 pygame.display.set_icon(pygame.image.load('./pictures/monster_red.png'))
+
+#Load font
+font = pygame.font.SysFont("Ethnocentric", 50)
+text_col = (255, 255, 255)
+
+# Load sounds
+gunshot = pygame.mixer.Sound('./sounds/gunshot.mp3')
+hit = pygame.mixer.Sound('./sounds/kill.mp3')
 
 pygame.mouse.set_visible(False)
 
 # Setting monster queue
 monsterRounds = {
-    1:"11",
-    2:"22",
-    3:"33",
-    4:''
+    1:"1111223",
+    2:"11222233",
+    3:"1111222223333",
+    4:"3333333333",
+    5:""
 }
 
 points = 0
@@ -144,10 +192,27 @@ points = 0
 def main():
     # starting game state
     global monsterList
+    global points
     state = "main menu"
-    round = 1
+    nextRound = 1
     currentRoundTime = 10000
-    firstRound = True 
+    mute = False
+    winFlag = False
+
+    # set current highest score
+    try:
+        f = open("score.txt")
+        highestScore = f.read()
+        f.close()
+    except:
+        f = open("score.txt", "w")
+        f.write('0')
+        highestScore = 0
+        f.close()
+
+    #start the soundtrack
+    pygame.mixer.music.load("./sounds/soundtrack.mp3") 
+    pygame.mixer.music.play(-1,0.0)
 
     # Game loop
     running = True
@@ -155,22 +220,29 @@ def main():
     while running:
         match(state):
             case 'game':
-                print(points)
                 
-                if checkNextRound(currentRoundTime, round):
-                    updateMonsterList(round)
-                    firstRound = False
-                    currentRoundTime = pygame.time.get_ticks()
-                    #tmp
-                    if round > 3:
-                        state = 'main menu'
-                    print(round)
-                    round += 1
+                round = nextRound
 
+                if checkNextRound(currentRoundTime, round):
+                    if round > len(monsterRounds)-1:
+                        state = 'win'
+                    updateMonsterList(round)
+                    currentRoundTime = pygame.time.get_ticks()
+                    
+                    nextRound += 1
+
+                #event handler
                 for event in pygame.event.get():
+                    #check quit
                     if event.type == pygame.QUIT:
                         running = False
-                    shoot(event)
+                    
+                    shoot(event, mute)
+
+                    #shoot sound
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and mute == False:
+                        pygame.mixer.Sound.play(gunshot)
+
                     
                     
                 game_window.blit(background, (0, 0))
@@ -182,19 +254,28 @@ def main():
                         game_window.blit(monsterList[i].sprite, monsterList[i].rect)
                 
                 # Draw the crosshair
-                
+                showBar(round)
                 showCrosshair()
                 showGun()
 
             case 'main menu':
-                game_window.blit(background, (0, 0))
+                game_window.blit(backgroundMainMenu, (0, 0))
+                #event handler
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
+
+                    #shoot sound
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and mute == False:
+                        pygame.mixer.Sound.play(gunshot)
+
+                    
                 if button(buttonSetup.playButton):
                     state = 'game'    
+                    nextRound = 1
                     round = 1
                     monsterList = []
+                    points = 0
                 if button(buttonSetup.settingsButton):
                     state = 'settings'
                 if button(buttonSetup.exitButton):
@@ -202,19 +283,62 @@ def main():
                 showCrosshair()
                     
             case 'settings':
-                game_window.blit(background, (0, 0))
+                game_window.blit(backgroundMainMenu, (0, 0))
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         running = False
 
+                    #shoot sound
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and mute == False:
+                        pygame.mixer.Sound.play(gunshot)
+
+                if button(buttonSetup.backButton):
+                    state = 'main menu'
                 
+                if button(buttonSetup.resetButton):
+                    highestScore = 0
                 
+                if mute == False:
+                    if button(buttonSetup.muteButton):
+                        pygame.mixer.music.pause()
+                        mute = True
+                else:
+                    if button(buttonSetup.muteButton):
+                        pygame.mixer.music.unpause()
+                        mute = False
+
+                showCrosshair()
             
-        
+            case 'win':
+                game_window.blit(background, (0, 0))
+                if points > int(highestScore):
+                    highestScore = str(points)
+                
+                showScores(highestScore)
+
+                #event handler
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+
+                    #shoot sound
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and mute == False:
+                        pygame.mixer.Sound.play(gunshot)
+
+                
+                if button(buttonSetup.mainMenuButton):
+                    state = 'main menu'
+
+                showBar(round)
+                showCrosshair()
+                
         # Update the display
         fpsClock.tick(fps)
         pygame.display.flip()
 
+    f = open('score.txt', 'w')
+    f.write(str(highestScore))
+    f.close()
 
 if __name__ == "__main__":
     main()

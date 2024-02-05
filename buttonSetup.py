@@ -12,6 +12,10 @@ class Button:
         self.clicked = False
 
 #buttons
-playButton = Button(500, 220, pygame.image.load('./pictures/play.png'), 0.7 )
-settingsButton = Button(500, 320, pygame.image.load('./pictures/settings.png'), 0.7 )
-exitButton = Button(500, 420, pygame.image.load('./pictures/exit.png'), 0.7 )
+playButton = Button(150, 220, pygame.image.load('./pictures/play.png'), 0.7 )
+settingsButton = Button(150, 320, pygame.image.load('./pictures/settings.png'), 0.7 )
+exitButton = Button(150, 420, pygame.image.load('./pictures/exit.png'), 0.7 )
+muteButton = Button(500, 450, pygame.image.load('./pictures/mute.png'), 0.7 )
+backButton = Button(500, 550, pygame.image.load('./pictures/back.png'), 0.7 )
+resetButton = Button(500, 350, pygame.image.load('./pictures/reset.png'), 0.7 )
+mainMenuButton = Button(500, 350, pygame.image.load('./pictures/backToMenu.png'), 0.7 )

@@ -1,18 +1,18 @@
 import pygame
-import sys
 import random
-import time
-
 import buttonSetup
-
-# def check_quit(event):
-#     for event in pygame.event.get():
-#         if event.type == pygame.QUIT:
-#             pygame.quit()
-#             sys.exit() 
 
 class Monster:
     def __init__(self, type):
+        """
+        Initialize a Monster object.
+
+        Parameters:
+        - type (str): The type of the monster.
+
+        Returns:
+        None
+        """
         self.type = type
         if type == "1":
             self.speed = 4
@@ -31,17 +31,17 @@ class Monster:
         self.vector = [multiplier*self.speed, multiplier*self.speed]
         self.position = [random.randint(0+self.rect.width,1000-self.rect.width), random.randint(0+self.rect.height,500-self.rect.height)]
         self.rect.center = self.position  
-    
-# class Button:
-#     def __init__(self, x, y, image, scale):
-#         width = image.get_width()
-#         height = image.get_height()
-#         self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
-#         self.rect = self.image.get_rect()
-#         self.rect.center = (x,y)
-#         self.clicked = False
 
 def button(button):
+    """
+    Handle button click events.
+
+    Parameters:
+    - button (Button): The button object.
+
+    Returns:
+    bool: True if the button is clicked, False otherwise.
+    """
     action = False
     mousePos = pygame.mouse.get_pos()
     game_window.blit(button.image, (button.rect.x, button.rect.y))
@@ -50,12 +50,20 @@ def button(button):
             action = True
             button.clicked = True
     if pygame.mouse.get_pressed()[0] == 0:
-            button.clicked = False        
+        button.clicked = False        
     
     return action
-    
 
 def monsterMove(i):
+    """
+    Move the monster.
+
+    Parameters:
+    - i (int): The index of the monster in the monsterList.
+
+    Returns:
+    None
+    """
     global monsterList
     if monsterList[i].rect.left < win.left:
         monsterList[i].vector[0] = -monsterList[i].vector[0]
@@ -66,18 +74,32 @@ def monsterMove(i):
 
     monsterList[i].rect = monsterList[i].rect.move(monsterList[i].vector)
     monsterList[i].position = monsterList[i].rect.center
-        
-    
-# def monsterDraw():
-#     for i in range (0, len(monsterList)):
-#         game_window.blit(monsterList[i].sprite, monsterList[i].position)
 
 def updateMonsterList(round):
+    """
+    Update the monster list for the given round.
+
+    Parameters:
+    - round (int): The current round.
+
+    Returns:
+    None
+    """
     global monsterList
     for i in range(0, len(monsterRounds[round])):
         monsterList.append(Monster(monsterRounds[round][i]))
-        
+
 def checkNextRound(curTime, round):
+    """
+    Check if it's time to move to the next round.
+
+    Parameters:
+    - curTime (int): The current time.
+    - round (int): The current round.
+
+    Returns:
+    bool: True if it's time to move to the next round, False otherwise.
+    """
     allDead = True
     for i in monsterList:
         if i.alive == True:
@@ -89,6 +111,16 @@ def checkNextRound(curTime, round):
     return allDead
 
 def shoot(event, mute):
+    """
+    Handle the shooting event.
+
+    Parameters:
+    - event (pygame.event.Event): The event object.
+    - mute (bool): True if the sound is muted, False otherwise.
+
+    Returns:
+    None
+    """
     global monsterList
     global points
     mousePos = pygame.mouse.get_pos()
@@ -101,11 +133,29 @@ def shoot(event, mute):
                 points += 50
 
 def showCrosshair():
+    """
+    Show the crosshair on the screen.
+
+    Parameters:
+    None
+
+    Returns:
+    None
+    """
     mousePos = pygame.mouse.get_pos()
     crosshair = pygame.image.load('./pictures/target.png')
     game_window.blit(crosshair,(mousePos[0] - crosshair.get_width()/2 ,mousePos[1] - crosshair.get_height()/2))
 
 def showGun():
+    """
+    Show the gun on the screen.
+
+    Parameters:
+    None
+
+    Returns:
+    None
+    """
     gunRect = pygame.image.load('./pictures/gunfire.png').get_rect()
     gunRect.centerx = window_width/2
     gunRect.bottom = 500
@@ -121,6 +171,15 @@ def showGun():
             game_window.blit(pygame.transform.flip(pygame.image.load('./pictures/gun.png'), True, False), gunRect)
 
 def showBar(round):
+    """
+    Show the score and round information bar on the screen.
+
+    Parameters:
+    - round (int): The current round.
+
+    Returns:
+    None
+    """
     game_window.blit(pygame.image.load('./pictures/bar.png'), (0,500))
 
     scoreImg = font.render(str(points), True, text_col)
@@ -134,6 +193,15 @@ def showBar(round):
     game_window.blit(roundImg, roundRect)
 
 def showScores(highestScore):
+    """
+    Show the highest score and current score on the screen.
+
+    Parameters:
+    - highestScore (int): The highest score.
+
+    Returns:
+    None
+    """
     game_window.blit(pygame.image.load('./pictures/scoreOverlay.png'), (0, 0))
 
     highScoreImg = font.render(str(highestScore), True, text_col)
